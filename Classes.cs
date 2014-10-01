@@ -138,10 +138,10 @@ namespace AutomagicSubs
         public string oldSubtitle { get; set; }
         public imdbdata imdbinfo { get; set; }
         public string oldSubtitleLang { get; set; }
-        public string GetSubtitleFileName(bool singleLang)
+        public string GetSubtitleFileName(bool noLangTag)
         {
-            //Console.WriteLine(singleLang); Console.ReadLine();
-            return Path.GetDirectoryName(filename) + "\\" + Path.GetFileNameWithoutExtension(filename) + (singleLang? "" : "." + subRes.ISO639) + "." + subRes.SubFormat;
+            //Console.WriteLine(noLangTag); Console.ReadLine();
+            return Path.GetDirectoryName(filename) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(filename) + (noLangTag? "" : "." + subRes.ISO639) + "." + subRes.SubFormat;
         }
 
         public string GetName()
@@ -149,9 +149,9 @@ namespace AutomagicSubs
             return Path.GetFileNameWithoutExtension(filename);
         }
 
-        public void saveSubtitle(bool overwrite, bool singleLang)
+        public void saveSubtitle(bool overwrite, bool noLangTag)
         {
-            string filenameToWrite = GetSubtitleFileName(singleLang);
+            string filenameToWrite = GetSubtitleFileName(noLangTag);
             if (File.Exists(filenameToWrite))
             {
                 if (overwrite)
@@ -163,7 +163,7 @@ namespace AutomagicSubs
                     return;
                 }
             }
-            FileStream fStream = new FileStream(GetSubtitleFileName(singleLang), FileMode.CreateNew);
+            FileStream fStream = new FileStream(GetSubtitleFileName(noLangTag), FileMode.CreateNew);
 			
 			BinaryWriter bw = new BinaryWriter(fStream);
 
@@ -313,11 +313,11 @@ namespace AutomagicSubs
 
                 if (subRes.MovieName != "")
                 {
-                    string newName = Path.GetDirectoryName(filename) + "\\" + FileFormat + Path.GetExtension(filename);
+                    string newName = Path.GetDirectoryName(filename) + Path.DirectorySeparatorChar + FileFormat + Path.GetExtension(filename);
                     newName = newName.Replace("%M", Utils.FilenameFromTitle(subRes.MovieName));
                     newName = newName.Replace("%Y", subRes.MovieYear);
                     newName = newName.Replace("%C", cdStr);
-//                    string newName = Path.GetDirectoryName(filename) + "\\" + FilenameFromTitle(subRes.MovieName) + "(" + subRes.MovieYear + ")" + cdStr + Path.GetExtension(filename);
+//                    string newName = Path.GetDirectoryName(filename) + Path.DirectorySeparatorChar + FilenameFromTitle(subRes.MovieName) + "(" + subRes.MovieYear + ")" + cdStr + Path.GetExtension(filename);
                     if (!File.Exists(newName)) { 
                         try
                         {
@@ -338,7 +338,7 @@ namespace AutomagicSubs
             {
                 if (subRes.MovieName != "")
                 {
-                    string newName = rootFolder + "\\" + FolderFormat;
+                    string newName = rootFolder + Path.DirectorySeparatorChar + FolderFormat;
                     newName = newName.Replace("%M", Utils.FilenameFromTitle(subRes.MovieName));
                     newName = newName.Replace("%Y", subRes.MovieYear);
                     if (!Directory.Exists(newName))
@@ -357,8 +357,8 @@ namespace AutomagicSubs
                         try
                         {
                             originalfolder = Path.GetDirectoryName(filename);
-                            File.Move(filename, newName + "\\" + Path.GetFileName(filename));
-                            filename = newName + "\\" + Path.GetFileName(filename);
+                            File.Move(filename, newName + Path.DirectorySeparatorChar + Path.GetFileName(filename));
+                            filename = newName + Path.DirectorySeparatorChar + Path.GetFileName(filename);
                         }
                         catch (Exception ex)
                         {
@@ -411,7 +411,7 @@ namespace AutomagicSubs
                     lstNfo.Add("CD: " + subRes.SubActualCD + "/" + subRes.SubSumCD);
                     lstNfo.Add("SubtitleUsed: " + subRes.ZipDownloadLink);
                     lstNfo.Add("SubtitleHash: " + subRes.SubHash);
-                    string nfoFileName = Path.GetDirectoryName(filename) + "\\" + Path.GetFileNameWithoutExtension(filename) + ".nfo";
+                    string nfoFileName = Path.GetDirectoryName(filename) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(filename) + ".nfo";
                     if (File.Exists(nfoFileName)) { File.Delete(nfoFileName); }
                     using (StreamWriter writer = File.AppendText(nfoFileName))
                     {

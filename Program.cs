@@ -13,6 +13,7 @@ namespace AutomagicSubs
     {
         private static IOSDb osdbProxy;
 		private static string DefaultLang = ConfigurationManager.AppSettings["DefaultLang"];
+		private static bool OverwriteByDefault = ConfigurationManager.AppSettings["OverwriteByDefault"] == "true" ? true : false;
         private static string CDFormat = ConfigurationManager.AppSettings["CDFormat"];
         private static string FileFormat = ConfigurationManager.AppSettings["FileFormat"];
         private static string FolderFormat = ConfigurationManager.AppSettings["FolderFormat"];
@@ -30,6 +31,7 @@ namespace AutomagicSubs
             if (args.Length == 0)
             {
 				Console.WriteLine("AutomagicSubs: Forked by luismaf form vrokolos (vrokolos@gmail.com) VrokSub");
+				Console.WriteLine("");
 				Console.WriteLine("Simple command line program that automatically downloads subtitles for your movies. You just pass a folder path and a preferred language list and it searches for subtitles using your avi files. It uses opensubtitles for the search and it requires the .net 2 framework runtimes which you probably already have.");
                 Console.WriteLine("");
                 Console.WriteLine("Usage:");
@@ -42,6 +44,7 @@ namespace AutomagicSubs
                 Console.WriteLine("");
                 Console.WriteLine("Params:");
                 Console.WriteLine("");
+				Console.WriteLine(" /nolangtag will not add the language to the subtitile filename");
                 Console.WriteLine(" /rename will rename all the movies for which AutomagicSubs has found a subtitle using the format found in config file");
                 Console.WriteLine(" /newonly will only try to locate subtitles for movies without subtitles and ignore the ones that have subtitles");
                 Console.WriteLine(" /nfo will download data from imdb.com (like actors, directors etc) and save them to a nfo file named like your movie");
@@ -75,7 +78,7 @@ namespace AutomagicSubs
                 List<string> argList = new List<string>(args);
                 argList.ForEach(new Action<string>(tolower));
                 bool ren = false;
-                bool singleLang = false;
+                bool noLangTag = false;
                 bool newOnly = false;
                 bool nfo = false;
                 bool folders = false;
@@ -95,7 +98,7 @@ namespace AutomagicSubs
                 if (args.Length > 2)
                 {
                     ren = (argList.Contains("/rename"));
-                    singleLang = (argList.Contains("/singlelang"));
+                    noLangTag = (argList.Contains("/nolangtag"));
                     newOnly = (argList.Contains("/newonly"));
                     nfo = (argList.Contains("/nfo"));
                     folders = (argList.Contains("/folders"));
@@ -105,7 +108,7 @@ namespace AutomagicSubs
                     //                    imdb = (argList.Contains("/imdb")) || covers;
 
                     argList.Remove("/rename");
-                    argList.Remove("/singlelang");
+                    argList.Remove("/nolangtag");
                     argList.Remove("/newonly");
                     argList.Remove("/nfo");
                     argList.Remove("/folders");
@@ -122,7 +125,7 @@ namespace AutomagicSubs
                         inputPath = args[0];
                         langSeq = args[1];
                     }
-                    Go(inputPath, outputPath, Get2CodeStr(langSeq), false, ren, singleLang, newOnly, nfo, folders, imdb, covers, pause, false);
+					Go(inputPath, outputPath, Get2CodeStr(langSeq), OverwriteByDefault, ren, noLangTag, newOnly, nfo, folders, imdb, covers, pause, false);
                 }
 				if (args.Length == 1 && Directory.Exists(args[0])) Go(args[0], outputPath, Get2CodeStr(DefaultLang), false, ren, true, newOnly, nfo, folders, imdb, covers, pause, false);
             }
@@ -173,7 +176,7 @@ namespace AutomagicSubs
             return c3;
         }
 
-        private static void Go(string FolderArg, string outputPath, string LangArg, bool overwrite, bool rename, bool singleLang, bool newOnly, bool nfo, bool folders, bool imdb, bool covers, bool pause, bool nosubfolders)
+        private static void Go(string FolderArg, string outputPath, string LangArg, bool overwrite, bool rename, bool noLangTag, bool newOnly, bool nfo, bool folders, bool imdb, bool covers, bool pause, bool nosubfolders)
         {
             try
             {
@@ -399,13 +402,15 @@ namespace AutomagicSubs
                                     {
                                         Directory.CreateDirectory(outputPath);
                                     }
-                                    if (!File.Exists(outputPath + "\\" + Path.GetFileName(m.filename)))
+									
+									if (!File.Exists(outputPath + Path.DirectorySeparatorChar + Path.GetFileName(m.filename)))
                                     {
                                         try
                                         {
-                                            File.Move(m.filename, outputPath + "\\" + Path.GetFileName(m.filename));
+                                            File.Move(m.filename, outputPath + Path.DirectorySeparatorChar + Path.GetFileName(m.filename));
                                             m.originalfilename = Path.GetFileName(m.filename);
-                                            m.filename = outputPath + "\\" + Path.GetFileName(m.filename);
+                                            m.filename = outputPath + Path.DirectorySeparatorChar + Path.GetFileName(m.filename);
+
                                         }
                                         catch (Exception ex)
                                         {
@@ -425,7 +430,7 @@ namespace AutomagicSubs
                                 {
                                     m.saveNfo();
                                 }
-                                m.saveSubtitle(overwrite, singleLang);
+                                m.saveSubtitle(overwrite, noLangTag);
                                 continue;
                             }
                             /*}
@@ -453,7 +458,7 @@ namespace AutomagicSubs
                                 try
                                 {
                                     Stream strm = Client.OpenRead(myf.imdbinfo.cover);
-                                    FileStream writecover = new FileStream(Path.GetDirectoryName(myf.filename) + "\\" + Path.GetFileNameWithoutExtension(myf.filename) + ".jpg", FileMode.Create);
+                                    FileStream writecover = new FileStream(Path.GetDirectoryName(myf.filename) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(myf.filename) + ".jpg", FileMode.Create);
                                     int a;
                                     do
                                     {
@@ -462,10 +467,10 @@ namespace AutomagicSubs
                                     }
                                     while (a != -1);
                                     writecover.Position = 0;
-                                    File.Copy(Path.GetDirectoryName(myf.filename) + "\\" + Path.GetFileNameWithoutExtension(myf.filename) + ".jpg", Path.GetDirectoryName(myf.filename) + "\\" + Path.GetFileName(myf.filename) + ".jpg");
+										File.Copy(Path.GetDirectoryName(myf.filename) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(myf.filename) + ".jpg", Path.GetDirectoryName(myf.filename) + Path.DirectorySeparatorChar + Path.GetFileName(myf.filename) + ".jpg");
                                     if (folders)
                                     {
-                                        File.Copy(Path.GetDirectoryName(myf.filename) + "\\" + Path.GetFileNameWithoutExtension(myf.filename) + ".jpg", Path.GetDirectoryName(myf.filename) + "\\folder.jpg");
+                                        File.Copy(Path.GetDirectoryName(myf.filename) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(myf.filename) + ".jpg", Path.GetDirectoryName(myf.filename) + "\\folder.jpg");
                                     }
                                     strm.Close();
                                     writecover.Close();
@@ -491,14 +496,15 @@ namespace AutomagicSubs
                 Console.WriteLine("Error: " + ex.Message);
             }
             System.Threading.Thread.Sleep(300);
-			Console.Write("I hope this has been of some help to you");
-            System.Threading.Thread.Sleep(300);
+			Console.Write("Hope it has been helpful");
+            System.Threading.Thread.Sleep(120);
             Console.Write(".");
-            System.Threading.Thread.Sleep(300);
+            System.Threading.Thread.Sleep(120);
             Console.Write(".");
-            System.Threading.Thread.Sleep(300);
+            System.Threading.Thread.Sleep(120);
             Console.Write(".");
-            System.Threading.Thread.Sleep(300);
+            System.Threading.Thread.Sleep(200);
+			Console.Write ("\n");
             if (pause == true) Console.ReadKey();
         }
     }

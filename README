@@ -5,7 +5,7 @@ This c# (.net) open source command line utility will downloads subtitles for you
 
 Usage:
 
-AutomagicSubs.exe "[Folder Path]" [Language Code Sequence] [Params]
+AutomagicSubs "[Folder Path]" [Language Code Sequence] [Params]
 
 Folder Path: The path to the folder that has all your movies. AutomagicSubs will search all subfolders of this path for movies.
 
@@ -21,9 +21,12 @@ Params:
  /nosubfolders will not search every subfolder of the given folder for movie files
  /move="[Output Path]" will move all files and folders to the given path. Useful if combined with folders
 
-Examples:
+Examples (Windows):
+AutomagicSubs.exe "c:\my videos"
+This will use the default language set in AutomagicSub.exe.config. 
+
 AutomagicSubs.exe "c:\my videos" es,en
- This will first try to locate a spanish subtitle for every movie in c:\my videos (including subfolders) and if it doesn't find one it will try to find one in english. You can use more language codes if you'd like.
+This will first try to locate a spanish subtitle for every movie in c:\my videos (including subfolders) and if it doesn't find one it will try to find one in english. You can use more language codes if you'd like.
 
 AutomagicSubs.exe "c:\my videos" it /rename
  will also rename all movies where subtitle has been found with year and cd number: MovieName(Year)-CD2.avi
@@ -38,3 +41,9 @@ AutomagicSubs.exe "c:\unsubbedvideos" nl /rename /folders /nfo /covers /move="c:
  4) Downloads imdb details and saves them to the output folder
  5) Downloads imdb covers and saves them to the output folder as folder.jpg and movie.jpg
  Note: Only movies with found subtitles will be affected
+
+Example (Linux):
+mono AutomagicSubs.exe "c:\my videos"
+
+
+
