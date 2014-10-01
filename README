@@ -13,6 +13,7 @@ Language Code Sequence: A sequence of two letter language codes according to you
 
 Params:
 
+ /nolangtag will not add the language to the subtitile filename
  /rename will rename all the movies for which AutomagicSubs has found a subtitle using the format found in config file
  /newonly will only try to locate subtitles for movies without subtitles and ignore the ones that have subtitles
  /nfo will download data from imdb.com (like actors, directors etc) and save them to a nfo file named like your movie
