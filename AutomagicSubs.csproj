@@ -27,6 +27,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <UseVSHostingProcess>true</UseVSHostingProcess>
+    <Commandlineparameters>"/home/luismaf/Escritorio/- Peliculas/Descargas/Tyrant.S01E02.1080p.WEB-DL.DD5.1.H.264-NTb[rarbg]"</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

@@ -11,9 +11,10 @@ namespace AutomagicSubs
 
     class Program
     {
-        private static IOSDb osdbProxy;
+		private static IOSDb osdbProxy;
 		private static string DefaultLang = ConfigurationManager.AppSettings["DefaultLang"];
 		private static bool OverwriteByDefault = ConfigurationManager.AppSettings["OverwriteByDefault"] == "true" ? true : false;
+		private static bool NoLangByDefault = ConfigurationManager.AppSettings["NoLangByDefault"] == "true" ? true : false;
         private static string CDFormat = ConfigurationManager.AppSettings["CDFormat"];
         private static string FileFormat = ConfigurationManager.AppSettings["FileFormat"];
         private static string FolderFormat = ConfigurationManager.AppSettings["FolderFormat"];
@@ -51,7 +52,8 @@ namespace AutomagicSubs
                 Console.WriteLine(" /covers will download the cover images imdb uses and save them to a jpg file named like your movie");
                 Console.WriteLine(" /folders will create a folder for each movie and move all files there. If /covers is used with this then a folder.jpg will also be created");
                 Console.WriteLine(" /nosubfolders will not search every subfolder of the given folder for movie files");
-                Console.WriteLine(" /move=\"[Output Path]\" will move all files and folders to the given path. Useful if combined with folders");
+				Console.WriteLine(" /move=\"[Output Path]\" will move all files and folders to the given path. Useful if combined with folders");
+                Console.WriteLine(" /pause will not exit the app until you press a key");
                 Console.WriteLine("");
                 Console.WriteLine("Examples:");
                 Console.WriteLine("AutomagicSubs.exe \"c:\\my videos\" es,en");
@@ -70,8 +72,8 @@ namespace AutomagicSubs
                 Console.WriteLine(" 4) Downloads imdb details and saves them to the output folder");
                 Console.WriteLine(" 5) Downloads imdb covers and saves them to the output folder as folder.jpg and movie.jpg");
                 Console.WriteLine(" Note: Only movies with found subtitles will be affected");
-
-                Console.ReadLine();
+				Console.WriteLine("");
+                //Console.ReadLine();
             }
             else
             {
@@ -127,7 +129,7 @@ namespace AutomagicSubs
                     }
 					Go(inputPath, outputPath, Get2CodeStr(langSeq), OverwriteByDefault, ren, noLangTag, newOnly, nfo, folders, imdb, covers, pause, false);
                 }
-				if (args.Length == 1 && Directory.Exists(args[0])) Go(args[0], outputPath, Get2CodeStr(DefaultLang), false, ren, true, newOnly, nfo, folders, imdb, covers, pause, false);
+				if (args.Length == 1 && Directory.Exists(args[0])) Go(args[0], outputPath, Get2CodeStr(DefaultLang), false, ren, NoLangByDefault, newOnly, nfo, folders, imdb, covers, pause, false);
             }
         }
 
@@ -289,12 +291,13 @@ namespace AutomagicSubs
                     {
                         subrt tempSubResults = osdbProxy.SearchSubtitles(theToken, theSis.ToArray());
                         //subrt tempSubResults = osdbProxy.SearchSubtitles(theToken, theSis.ToArray(), "500");
-                        lstSubResults.AddRange(tempSubResults.data);
+						lstSubResults.AddRange(tempSubResults.data);
                         SubResults.seconds += tempSubResults.seconds;
-                    }
-                    catch (Exception e)
+					}
+                    catch (Exception)
                     {
-                        Console.WriteLine("Error: " + e.Message.ToString()); //uncommented by luismaf
+							//Console.WriteLine("Error: " + e.Message.ToString()); 
+							//commented by luismaf to avoid "Error: response contains boolean value where array expected [response : struct mapped to type subrt : member data mapped to type subRes[]]"
                     }
                 }
                 if(lstSubResults.Count>0)
@@ -505,7 +508,8 @@ namespace AutomagicSubs
             Console.Write(".");
             System.Threading.Thread.Sleep(200);
 			Console.Write ("\n");
-            if (pause == true) Console.ReadKey();
+            //if (pause == true) Console.ReadKey();
+			System.Environment.Exit(0);
         }
     }
 }
