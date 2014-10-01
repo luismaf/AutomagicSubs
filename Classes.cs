@@ -3,7 +3,7 @@ using System.ComponentModel;
 using CookComputing.XmlRpc;
 using System.IO;
 using System;
-namespace OSDbClient
+namespace AutomagicSubs
 {
 
     public class imdbdata
@@ -86,6 +86,7 @@ namespace OSDbClient
 
     public class subrt
     {
+        public string status { get; set; }
         public subRes[] data { get; set; }
         public double seconds { get; set; }
     }
@@ -96,6 +97,7 @@ namespace OSDbClient
         public string sublanguageid { get; set; }
         public string moviehash { get; set; }
         public string moviebytesize { get; set; }
+        public string tag { get; set; }
         [XmlRpcMissingMapping(MappingAction.Ignore)]
         public string imdbid { get; set; }
     }
@@ -127,6 +129,7 @@ namespace OSDbClient
         public byte[] cover { get; set; }
         public string hash { get; set; }
         public string filename { get; set; }
+        public string bytesize { get; set; } //added by luismaf
         public string originalfilename { get; set; }
         public string originalfolder { get; set; }
         public subRes subRes { get; set; }
@@ -135,9 +138,10 @@ namespace OSDbClient
         public string oldSubtitle { get; set; }
         public imdbdata imdbinfo { get; set; }
         public string oldSubtitleLang { get; set; }
-        public string GetSubtitleFileName()
+        public string GetSubtitleFileName(bool singleLang)
         {
-            return Path.GetDirectoryName(filename) + "\\" + Path.GetFileNameWithoutExtension(filename) + "." + subRes.ISO639 + "." + subRes.SubFormat;
+            //Console.WriteLine(singleLang); Console.ReadLine();
+            return Path.GetDirectoryName(filename) + "\\" + Path.GetFileNameWithoutExtension(filename) + (singleLang? "" : "." + subRes.ISO639) + "." + subRes.SubFormat;
         }
 
         public string GetName()
@@ -145,9 +149,9 @@ namespace OSDbClient
             return Path.GetFileNameWithoutExtension(filename);
         }
 
-        public void saveSubtitle(bool overwrite)
+        public void saveSubtitle(bool overwrite, bool singleLang)
         {
-            string filenameToWrite = GetSubtitleFileName();
+            string filenameToWrite = GetSubtitleFileName(singleLang);
             if (File.Exists(filenameToWrite))
             {
                 if (overwrite)
@@ -159,7 +163,7 @@ namespace OSDbClient
                     return;
                 }
             }
-            FileStream fStream = new FileStream(GetSubtitleFileName(), FileMode.CreateNew);
+            FileStream fStream = new FileStream(GetSubtitleFileName(singleLang), FileMode.CreateNew);
 			
 			BinaryWriter bw = new BinaryWriter(fStream);
 
@@ -262,7 +266,7 @@ namespace OSDbClient
                             }
                             catch (Exception ex)
                             {
-
+                                Console.WriteLine("Error: " + ex.Message);
                             }
                         }
                     }
@@ -474,8 +478,12 @@ namespace OSDbClient
         [XmlRpcMethod("LogOut")]
         XmlRpcStruct LogOut(string token);
 
+        [XmlRpcMethod("CheckSubHash2")]
+        subrt CheckSubHash2(string token, subInfo[] subs);
+        //subrt SearchSubtitles(string token, subInfo[] subs, string limit);
         [XmlRpcMethod("SearchSubtitles")]
         subrt SearchSubtitles(string token, subInfo[] subs);
+        //subrt SearchSubtitles(string token, subInfo[] subs, string limit);
 
         [XmlRpcMethod("DownloadSubtitles")]
         subdata DownloadSubtitles(string token, string[] subs);

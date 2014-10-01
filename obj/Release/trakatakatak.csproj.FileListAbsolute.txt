@@ -1,0 +1,7 @@
+C:\Users\luismaf\Documents\Visual Studio 2012\Projects\AutomagicSubs\bin\Release\AutomagicSubs.exe.config
+C:\Users\luismaf\Documents\Visual Studio 2012\Projects\AutomagicSubs\bin\Release\App.config
+C:\Users\luismaf\Documents\Visual Studio 2012\Projects\AutomagicSubs\bin\Release\AutomagicSubs.exe
+C:\Users\luismaf\Documents\Visual Studio 2012\Projects\AutomagicSubs\bin\Release\AutomagicSubs.pdb
+C:\Users\luismaf\Documents\Visual Studio 2012\Projects\AutomagicSubs\bin\Release\CookComputing.XmlRpcV2.dll
+C:\Users\luismaf\Documents\Visual Studio 2012\Projects\AutomagicSubs\obj\Release\AutomagicSubs.exe
+C:\Users\luismaf\Documents\Visual Studio 2012\Projects\AutomagicSubs\obj\Release\AutomagicSubs.pdb

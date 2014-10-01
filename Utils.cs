@@ -4,7 +4,7 @@ using System.Text;
 using System.IO;
 using System.IO.Compression;
 using System.Text.RegularExpressions;
-namespace OSDbClient
+namespace AutomagicSubs
 {
     class Utils
     {
@@ -43,7 +43,8 @@ namespace OSDbClient
             input.Close();
             byte[] result = BitConverter.GetBytes(lhash);
             Array.Reverse(result);
-            return result;
+            if (result.Length==0) return null;
+            else return result;
         }
 
         public static string ToHexadecimal(byte[] bytes)

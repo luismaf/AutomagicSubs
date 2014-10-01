@@ -1,0 +1,8 @@
+C:\Users\luismaf\Documents\Visual Studio 2012\Projects\AutomagicSubs\bin\Debug\AutomagicSubs.exe.config
+C:\Users\luismaf\Documents\Visual Studio 2012\Projects\AutomagicSubs\bin\Debug\App.config
+C:\Users\luismaf\Documents\Visual Studio 2012\Projects\AutomagicSubs\bin\Debug\AutomagicSubs.exe
+C:\Users\luismaf\Documents\Visual Studio 2012\Projects\AutomagicSubs\bin\Debug\AutomagicSubs.pdb
+C:\Users\luismaf\Documents\Visual Studio 2012\Projects\AutomagicSubs\bin\Debug\CookComputing.XmlRpcV2.dll
+C:\Users\luismaf\Documents\Visual Studio 2012\Projects\AutomagicSubs\obj\Debug\AutomagicSubs.csprojResolveAssemblyReference.cache
+C:\Users\luismaf\Documents\Visual Studio 2012\Projects\AutomagicSubs\obj\Debug\AutomagicSubs.exe
+C:\Users\luismaf\Documents\Visual Studio 2012\Projects\AutomagicSubs\obj\Debug\AutomagicSubs.pdb

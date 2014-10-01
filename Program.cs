@@ -6,12 +6,13 @@ using System.IO;
 using System.Net;
 using CookComputing.XmlRpc;
 
-namespace OSDbClient
+namespace AutomagicSubs
 {
 
     class Program
     {
         private static IOSDb osdbProxy;
+		private static string DefaultLang = ConfigurationManager.AppSettings["DefaultLang"];
         private static string CDFormat = ConfigurationManager.AppSettings["CDFormat"];
         private static string FileFormat = ConfigurationManager.AppSettings["FileFormat"];
         private static string FolderFormat = ConfigurationManager.AppSettings["FolderFormat"];
@@ -26,22 +27,22 @@ namespace OSDbClient
 
         static void Main(string[] args)
         {
-            if (args.Length < 2)
+            if (args.Length == 0)
             {
-                Console.WriteLine("Homepage with latest version: http://vrokolos.blogspot.com/2008/03/vroksub-released.html");
-                Console.WriteLine("Just released this simple command line program that automatically downloads subtitles for your movies. You just pass a folder path and a preferred language list and it searches for subtitles using your avi files. It uses opensubtitles for the search and it requires the .net 2 framework runtimes which you probably already have.");
+				Console.WriteLine("AutomagicSubs: Forked by luismaf form vrokolos (vrokolos@gmail.com) VrokSub");
+				Console.WriteLine("Simple command line program that automatically downloads subtitles for your movies. You just pass a folder path and a preferred language list and it searches for subtitles using your avi files. It uses opensubtitles for the search and it requires the .net 2 framework runtimes which you probably already have.");
                 Console.WriteLine("");
-                Console.WriteLine("Useage:");
+                Console.WriteLine("Usage:");
                 Console.WriteLine("");
-                Console.WriteLine("vroksub.exe \"[Folder Path]\" [Language Code Sequence] [Params]");
+                Console.WriteLine("AutomagicSubs.exe \"[Folder Path]\" [Language Code Sequence] [Params]");
                 Console.WriteLine("");
-                Console.WriteLine("Folder Path: The path to the folder that has all your movies. VrokSub will search all subfolders of this path for movies.");
+                Console.WriteLine("Folder Path: The path to the folder that has all your movies. AutomagicSubs will search all subfolders of this path for movies.");
                 Console.WriteLine("");
-                Console.WriteLine("Language Code Sequence: A sequence of two letter language codes according to your preference separated by coma. You can find the two letter codes here: http://www.loc.gov/standards/iso639-2/php/code_list.php. VrokSub will search subtitles of the first language code and if it doesn't find one it will continue to the next code.");
+				Console.WriteLine("Language Code Sequence: A sequence of two letter language codes according to your preference separated by coma. By default will be use the language set in config file. AutomagicSubs will search subtitles of the first language code and if it doesn't find one it will continue to the next code. You can find the two letter codes here: http://www.loc.gov/standards/iso639-2/php/code_list.php.");
                 Console.WriteLine("");
                 Console.WriteLine("Params:");
                 Console.WriteLine("");
-                Console.WriteLine(" /rename will rename all the movies for which vroksub has found a subtitle using the format found in vroksub.exe.config");
+                Console.WriteLine(" /rename will rename all the movies for which AutomagicSubs has found a subtitle using the format found in config file");
                 Console.WriteLine(" /newonly will only try to locate subtitles for movies without subtitles and ignore the ones that have subtitles");
                 Console.WriteLine(" /nfo will download data from imdb.com (like actors, directors etc) and save them to a nfo file named like your movie");
                 Console.WriteLine(" /covers will download the cover images imdb uses and save them to a jpg file named like your movie");
@@ -50,18 +51,18 @@ namespace OSDbClient
                 Console.WriteLine(" /move=\"[Output Path]\" will move all files and folders to the given path. Useful if combined with folders");
                 Console.WriteLine("");
                 Console.WriteLine("Examples:");
-                Console.WriteLine("vroksub.exe \"c:\\my videos\" gr,en");
-                Console.WriteLine(" This will first try to locate a greek subtitle for every movie in c:\\my videos (including subfolders) and if it doesn't find one it will try to find one in english. You can use more language codes if you'd like.");
+                Console.WriteLine("AutomagicSubs.exe \"c:\\my videos\" es,en");
+                Console.WriteLine(" This will first try to locate a spanish subtitle for every movie in c:\\my videos (including subfolders) and if it doesn't find one it will try to find one in english. You can use more language codes if you'd like.");
                 Console.WriteLine("");
-                Console.WriteLine("vroksub.exe \"c:\\my videos\" it /rename");
+                Console.WriteLine("AutomagicSubs.exe \"c:\\my videos\" it /rename");
                 Console.WriteLine(" will also rename all movies where subtitle has been found with year and cd number: MovieName(Year)-CD2.avi");
                 Console.WriteLine("");
-                Console.WriteLine("vroksub.exe \"c:\\my videos\" de /newonly");
+                Console.WriteLine("AutomagicSubs.exe \"c:\\my videos\" de /newonly");
                 Console.WriteLine(" will only search for subtitles for movies that don't have one already.");
                 Console.WriteLine("");
-                Console.WriteLine("vroksub.exe \"c:\\unsubbedvideos\" nl /rename /folders /nfo /covers /move=\"c:\\my videos\"");
-                Console.WriteLine(" 1) Creates a folder for each movie under c:\\my videos with the name format found in vroksub.exe.config");
-                Console.WriteLine(" 2) Renames each movie using the format found in vroksub.exe.config");
+                Console.WriteLine("AutomagicSubs.exe \"c:\\unsubbedvideos\" nl /rename /folders /nfo /covers /move=\"c:\\my videos\"");
+                Console.WriteLine(" 1) Creates a folder for each movie under c:\\my videos with the name format found in AutomagicSubs.exe.config");
+                Console.WriteLine(" 2) Renames each movie using the format found in AutomagicSubs.exe.config");
                 Console.WriteLine(" 3) Downloads dutch subtitles for each movie");
                 Console.WriteLine(" 4) Downloads imdb details and saves them to the output folder");
                 Console.WriteLine(" 5) Downloads imdb covers and saves them to the output folder as folder.jpg and movie.jpg");
@@ -74,11 +75,13 @@ namespace OSDbClient
                 List<string> argList = new List<string>(args);
                 argList.ForEach(new Action<string>(tolower));
                 bool ren = false;
+                bool singleLang = false;
                 bool newOnly = false;
                 bool nfo = false;
                 bool folders = false;
                 bool imdb = false;
                 bool covers = false;
+                bool pause = false;
                 string inputPath = "";
                 string outputPath = "";
                 string langSeq = "";
@@ -92,31 +95,36 @@ namespace OSDbClient
                 if (args.Length > 2)
                 {
                     ren = (argList.Contains("/rename"));
+                    singleLang = (argList.Contains("/singlelang"));
                     newOnly = (argList.Contains("/newonly"));
                     nfo = (argList.Contains("/nfo"));
                     folders = (argList.Contains("/folders"));
                     covers = (argList.Contains("/covers"));
+                    pause = (argList.Contains("/pause"));
                     imdb = (nfo || covers);
                     //                    imdb = (argList.Contains("/imdb")) || covers;
-                }
-                argList.Remove("/rename");
-                argList.Remove("/newonly");
-                argList.Remove("/nfo");
-                argList.Remove("/folders");
-                argList.Remove("/covers");
-                argList.Remove("/move=" + outputPath);
-                if (Directory.Exists(args[1]) && (!Directory.Exists(args[0])))
-                {
-                    inputPath = args[1];
-                    langSeq = args[0];
-                }
-                else
-                {
-                    inputPath = args[0];
-                    langSeq = args[1];
-                }
 
-                Go(inputPath, outputPath, Get2CodeStr(langSeq), false, ren, newOnly, nfo, folders, imdb, covers, false);
+                    argList.Remove("/rename");
+                    argList.Remove("/singlelang");
+                    argList.Remove("/newonly");
+                    argList.Remove("/nfo");
+                    argList.Remove("/folders");
+                    argList.Remove("/covers");
+                    argList.Remove("/pause");
+                    argList.Remove("/move=" + outputPath);
+                    if (Directory.Exists(args[1]) && (!Directory.Exists(args[0])))
+                    {
+                        inputPath = args[1];
+                        langSeq = args[0];
+                    }
+                    else
+                    {
+                        inputPath = args[0];
+                        langSeq = args[1];
+                    }
+                    Go(inputPath, outputPath, Get2CodeStr(langSeq), false, ren, singleLang, newOnly, nfo, folders, imdb, covers, pause, false);
+                }
+				if (args.Length == 1 && Directory.Exists(args[0])) Go(args[0], outputPath, Get2CodeStr(DefaultLang), false, ren, true, newOnly, nfo, folders, imdb, covers, pause, false);
             }
         }
 
@@ -165,58 +173,69 @@ namespace OSDbClient
             return c3;
         }
 
-        private static void Go(string FolderArg, string outputPath, string LangArg, bool overwrite, bool rename, bool newOnly, bool nfo, bool folders, bool imdb, bool covers, bool nosubfolders)
+        private static void Go(string FolderArg, string outputPath, string LangArg, bool overwrite, bool rename, bool singleLang, bool newOnly, bool nfo, bool folders, bool imdb, bool covers, bool pause, bool nosubfolders)
         {
             try
             {
-                Console.WriteLine("Searching for movie files");
-                #region Get Movie Files
-                if (File.Exists(FolderArg))
+            Console.WriteLine("Searching for movie files");
+            #region Get Movie Files
+            if (File.Exists(FolderArg))
+            {
+                if (outputPath == "")
                 {
-                    if (outputPath == "")
-                    {
-                        outputPath = Path.GetDirectoryName(FolderArg);
-                    }
-                    MovieFile theFile = new MovieFile();
-                    theFile.filename = FolderArg;
-                    theFile.getOldSubtitle(subtitleFormats, theLangMap, LangArg);
-                    myFiles.Add(theFile);
+                    outputPath = Path.GetDirectoryName(FolderArg);
                 }
-                else if (Directory.Exists(FolderArg))
+                MovieFile theFile = new MovieFile();
+                theFile.filename = FolderArg;
+                theFile.getOldSubtitle(subtitleFormats, theLangMap, LangArg);
+                myFiles.Add(theFile);
+            }
+            else if (Directory.Exists(FolderArg))
+            {
+                if (outputPath == "")
                 {
-                    if (outputPath == "")
+                    outputPath = FolderArg;
+                }
+                foreach (string extension in movieFormats)
+                {
+                    foreach (string filename in Utils.GetFilesByExtensions(FolderArg, "." + extension, SearchOption.AllDirectories))
                     {
-                        outputPath = FolderArg;
-                    }
-                    foreach (string extension in movieFormats)
-                    {
-                        foreach (string filename in Utils.GetFilesByExtensions(FolderArg, "." + extension, SearchOption.AllDirectories))
+                        MovieFile theFile = new MovieFile();
+                        theFile.filename = filename;
+                        theFile.getOldSubtitle(subtitleFormats, theLangMap, LangArg);
+
+                        if ((newOnly && theFile.oldSubtitle != "") || (!newOnly))
                         {
-                            MovieFile theFile = new MovieFile();
-                            theFile.filename = filename;
-                            theFile.getOldSubtitle(subtitleFormats, theLangMap, LangArg);
-                            if ((newOnly && (theFile.oldSubtitle == "")) || (!newOnly))
-                            {
-                                myFiles.Add(theFile);
-                            }
+                            myFiles.Add(theFile);
                         }
                     }
-                    Console.WriteLine("Found " + myFiles.Count.ToString() + " Movie Files");
                 }
-                else
-                {
-                    throw new Exception("The folder or file given does not exist");
-                }
+                Console.WriteLine("Found " + myFiles.Count.ToString() + " Movie Files");
+            }
+            else
+            {
+                throw new Exception("The folder or file given does not exist");
+            }
+            #endregion
+            if (myFiles.Count != 0)
+            {
+
+                Console.WriteLine("Connecting...");
+                #region Connect and login
+                osdbProxy = XmlRpcProxyGen.Create<IOSDb>();
+                osdbProxy.Url = "http://api.opensubtitles.org/xml-rpc";
+                //osdbProxy.KeepAlive = false;
+                osdbProxy.KeepAlive = true;
+                if (myFiles.Count == 0) { Console.WriteLine("No movies found"); }
+                XmlRpcStruct Login = osdbProxy.LogIn("", "", "en", "vroksub");
+                theToken = Login["token"].ToString();
                 #endregion
-                if (myFiles.Count != 0)
-                {
-                    
-                
+
                 Console.WriteLine("Creating subtitle request from movie files");
                 #region Create subtitle request from movie files
                 langs = Get3CodeStr(LangArg).Split(',');
                 List<string> l3 = new List<string>(langs);
-                List<string> l2 = new List<string>(LangArg.Split(','));
+                //List<string> l2 = new List<string>(LangArg.Split(',')); //commented by luismaf
                 int i = 0;
                 List<List<subInfo>> allSis = new List<List<subInfo>>();
                 List<subInfo> sis = new List<subInfo>();
@@ -224,9 +243,12 @@ namespace OSDbClient
                 {
                     if ((newOnly && (theFile.oldSubtitle == "")) || (!newOnly))
                     {
-                        foreach (string lang in langs)
+                        try
                         {
-                            try
+                            theFile.hash = Utils.ToHexadecimal(Utils.ComputeMovieHash(theFile.filename));
+                            theFile.bytesize = new FileInfo(theFile.filename).Length.ToString();
+                            
+                            foreach (string lang in langs)
                             {
                                 if (sis.Count >= 40)
                                 {
@@ -234,18 +256,17 @@ namespace OSDbClient
                                     sis = new List<subInfo>();
                                 }
                                 subInfo si = new subInfo();
-                                si.sublanguageid = lang;
-                                theFile.hash = Utils.ToHexadecimal(Utils.ComputeMovieHash(theFile.filename));
                                 si.moviehash = theFile.hash;
-                                si.moviebytesize = new FileInfo(theFile.filename).Length.ToString();
+                                si.moviebytesize = theFile.bytesize;
+                                si.tag = theFile.filename; //added by luismaf
+                                si.sublanguageid = lang;
                                 sis.Add(si);
-                                i++;
-
+                                i++;                           
                             }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine("Error with file: " + theFile.filename + "\n" + ex.Message);
-                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("Error with file: " + theFile.filename + "\n" + ex.Message);
                         }
                     }
                 }
@@ -255,40 +276,34 @@ namespace OSDbClient
                 }
                 #endregion
 
-                Console.WriteLine("Connecting...");
-                #region Connect and login
-                osdbProxy = XmlRpcProxyGen.Create<IOSDb>();
-                osdbProxy.Url = "http://api.opensubtitles.org/xml-rpc";
-                osdbProxy.KeepAlive = false;
-                if (myFiles.Count == 0) { Console.WriteLine("No movies found"); }
-                XmlRpcStruct Login = osdbProxy.LogIn("", "", "en", "vroksub");
-                theToken = Login["token"].ToString();
-                #endregion
-
                 Console.WriteLine("Searching for subtitles...");
                 #region Search for subtitles
                 subrt SubResults = new subrt();
                 List<subRes> lstSubResults = new List<subRes>();
-                try
+                foreach (List<subInfo> theSis in allSis) 
                 {
-                    foreach (List<subInfo> theSis in allSis)
+                    try
                     {
                         subrt tempSubResults = osdbProxy.SearchSubtitles(theToken, theSis.ToArray());
+                        //subrt tempSubResults = osdbProxy.SearchSubtitles(theToken, theSis.ToArray(), "500");
                         lstSubResults.AddRange(tempSubResults.data);
                         SubResults.seconds += tempSubResults.seconds;
                     }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Error: " + e.Message.ToString()); //uncommented by luismaf
+                    }
+                }
+                if(lstSubResults.Count>0)
                     SubResults.data = lstSubResults.ToArray();
-                }
-                catch (Exception e)
-                {
-
-                }
+                
                 #endregion
 
-                Console.WriteLine("Found subtitles:");
                 #region Choose best subtitle
-                if (SubResults != null)
+                //if (SubResults != null) mod by luismaf:
+                if (SubResults.data != null)
                 {
+                    Console.WriteLine("Found subtitles:");
                     BindingList<subRes> g = new BindingList<subRes>(SubResults.data);
                     dlCount = 0;
                     foreach (MovieFile mf in myFiles)
@@ -313,7 +328,7 @@ namespace OSDbClient
 
                     Console.WriteLine("Downloading subtitles...");
                     #region Download Subtitles
-                    string[] ids = new string[dlCount];
+                    //string[] ids = new string[dlCount]; //commented by luismaf
                     List<string> lstids = new List<string>();
                     List<List<string>> allids = new List<List<string>>();
                     int k = 0;
@@ -326,7 +341,7 @@ namespace OSDbClient
                         }
                         if (myf.subtitleId != null)
                         {
-                            lstids.Add( myf.subtitleId );
+                            lstids.Add(myf.subtitleId);
                             k++;
                         }
                     }
@@ -373,51 +388,51 @@ namespace OSDbClient
                     {
                         foreach (MovieFile m in myFiles)
                         {
-                            try
+                            /*try
+                            {//*/
+                            if (m.subtitleId == s.idsubtitlefile)
                             {
-                                if (m.subtitleId == s.idsubtitlefile)
+                                m.subtitle = Utils.DecodeAndDecompress(s.data);
+                                if (outputPath != FolderArg)
                                 {
-                                    m.subtitle = Utils.DecodeAndDecompress(s.data);
-                                    if (outputPath != FolderArg)
+                                    if (!Directory.Exists(outputPath))
                                     {
-                                        if (!Directory.Exists(outputPath))
+                                        Directory.CreateDirectory(outputPath);
+                                    }
+                                    if (!File.Exists(outputPath + "\\" + Path.GetFileName(m.filename)))
+                                    {
+                                        try
                                         {
-                                            Directory.CreateDirectory(outputPath);
+                                            File.Move(m.filename, outputPath + "\\" + Path.GetFileName(m.filename));
+                                            m.originalfilename = Path.GetFileName(m.filename);
+                                            m.filename = outputPath + "\\" + Path.GetFileName(m.filename);
                                         }
-                                        if (!File.Exists(outputPath + "\\" + Path.GetFileName(m.filename)))
+                                        catch (Exception ex)
                                         {
-                                            try
-                                            {
-                                                File.Move(m.filename, outputPath + "\\" + Path.GetFileName(m.filename));
-                                                m.originalfilename = Path.GetFileName(m.filename);
-                                                m.filename = outputPath + "\\" + Path.GetFileName(m.filename);
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                Console.WriteLine("Error moving movie: " + m.filename + "\n" + ex.Message);
-                                            }
+                                            Console.WriteLine("Error moving movie: " + m.filename + "\n" + ex.Message);
                                         }
                                     }
-                                    if (folders)
-                                    {
-                                        m.newFolder(outputPath, FolderFormat);
-                                    }
-                                    if (rename)
-                                    {
-                                        m.rename(FileFormat, CDFormat);
-                                    }
-                                    if (nfo)
-                                    {
-                                        m.saveNfo();
-                                    }
-                                    m.saveSubtitle(overwrite);
-                                    continue;
                                 }
+                                if (folders)
+                                {
+                                    m.newFolder(outputPath, FolderFormat);
+                                }
+                                if (rename)
+                                {
+                                    m.rename(FileFormat, CDFormat);
+                                }
+                                if (nfo)
+                                {
+                                    m.saveNfo();
+                                }
+                                m.saveSubtitle(overwrite, singleLang);
+                                continue;
                             }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine("Error saving subtitle for: " + m.filename + "\n" + ex.Message);
-                            }
+                            /*}
+                          catch (Exception ex)
+                           {
+                               Console.WriteLine("Error saving subtitle for: " + m.filename + "\n" + ex.Message);
+                           }//*/
                         }
                     }
                 }
@@ -469,13 +484,22 @@ namespace OSDbClient
                 #region Disconnect
                 osdbProxy.LogOut(theToken);
                 #endregion
-                }
+            }
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Error: " + ex.Message);
             }
-
+            System.Threading.Thread.Sleep(300);
+			Console.Write("I hope this has been of some help to you");
+            System.Threading.Thread.Sleep(300);
+            Console.Write(".");
+            System.Threading.Thread.Sleep(300);
+            Console.Write(".");
+            System.Threading.Thread.Sleep(300);
+            Console.Write(".");
+            System.Threading.Thread.Sleep(300);
+            if (pause == true) Console.ReadKey();
         }
     }
 }
