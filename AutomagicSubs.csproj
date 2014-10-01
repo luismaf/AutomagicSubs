@@ -44,55 +44,55 @@
     <Reference Include="System.Configuration" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Classes.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="XmlRpc\DateTime8601.cs" />
+    <Compile Include="XmlRpc\IXmlRpcProxy.cs" />
+    <Compile Include="XmlRpc\util.cs" />
+    <Compile Include="XmlRpc\SystemMethodsBase.cs" />
+    <Compile Include="XmlRpc\XmlRpcClientFormatterSink.cs" />
+    <Compile Include="XmlRpc\XmlRpcAsyncResult.cs" />
+    <Compile Include="XmlRpc\XmlRpcBeginAttribute.cs" />
+    <Compile Include="XmlRpc\XmlRpcBoolean.cs" />
+    <Compile Include="XmlRpc\XmlRpcClientFormatterSinkProvider.cs" />
+    <Compile Include="XmlRpc\XmlRpcClientProtocol.cs" />
+    <Compile Include="XmlRpc\XmlRpcDateTime.cs" />
+    <Compile Include="XmlRpc\XmlRpcDouble.cs" />
+    <Compile Include="XmlRpc\XmlRpcEndAttribute.cs" />
+    <Compile Include="XmlRpc\XmlRpcException.cs" />
+    <Compile Include="XmlRpc\XmlRpcFaultException.cs" />
+    <Compile Include="XmlRpc\XmlRpcInt.cs" />
+    <Compile Include="XmlRpc\XmlRpcLogger.cs" />
+    <Compile Include="XmlRpc\XmlRpcMemberAttribute.cs" />
+    <Compile Include="XmlRpc\XmlRpcMethodAttribute.cs" />
+    <Compile Include="XmlRpc\XmlRpcMethodInfo.cs" />
+    <Compile Include="XmlRpc\XmlRpcMissingMappingAttribute.cs" />
+    <Compile Include="XmlRpc\XmlRpcNonStandard.cs" />
+    <Compile Include="XmlRpc\XmlRpcParameterAttribute.cs" />
+    <Compile Include="XmlRpc\XmlRpcParameterInfo.cs" />
+    <Compile Include="XmlRpc\XmlRpcProxyCodeGen.cs" />
+    <Compile Include="XmlRpc\XmlRpcProxyGen.cs" />
+    <Compile Include="XmlRpc\XmlRpcRequest.cs" />
+    <Compile Include="XmlRpc\XmlRpcRequestEventArgs.cs" />
+    <Compile Include="XmlRpc\XmlRpcResponse.cs" />
+    <Compile Include="XmlRpc\XmlRpcResponseEventArgs.cs" />
+    <Compile Include="XmlRpc\XmlRpcReturnValueAttribute.cs" />
+    <Compile Include="XmlRpc\XmlRpcSerializer.cs" />
+    <Compile Include="XmlRpc\XmlRpcServerFormatterSink.cs" />
+    <Compile Include="XmlRpc\XmlRpcServerFormatterSinkProvider.cs" />
+    <Compile Include="XmlRpc\XmlRpcServerProtocol.cs" />
+    <Compile Include="XmlRpc\XmlRpcServiceAttribute.cs" />
+    <Compile Include="XmlRpc\XmlRpcServiceInfo.cs" />
+    <Compile Include="XmlRpc\XmlRpcStruct.cs" />
+    <Compile Include="XmlRpc\XmlRpcUrlAttribute.cs" />
+    <Compile Include="Classes.cs" />
     <Compile Include="Utils.cs" />
-    <Compile Include="SystemMethodsBase.cs" />
-    <Compile Include="XmlRpcProxyGen.cs" />
-    <Compile Include="XmlRpcStruct.cs" />
-    <Compile Include="IXmlRpcProxy.cs" />
-    <Compile Include="XmlRpcNonStandard.cs" />
-    <Compile Include="XmlRpcClientProtocol.cs" />
-    <Compile Include="XmlRpcRequest.cs" />
-    <Compile Include="XmlRpcResponse.cs" />
-    <Compile Include="XmlRpcAsyncResult.cs" />
-    <Compile Include="XmlRpcRequestEventArgs.cs" />
-    <Compile Include="XmlRpcResponseEventArgs.cs" />
-    <Compile Include="XmlRpcMissingMappingAttribute.cs" />
-    <Compile Include="XmlRpcMethodAttribute.cs" />
-    <Compile Include="XmlRpcMethodInfo.cs" />
-    <Compile Include="XmlRpcParameterAttribute.cs" />
-    <Compile Include="XmlRpcParameterInfo.cs" />
-    <Compile Include="XmlRpcProxyCodeGen.cs" />
-    <Compile Include="XmlRpcFaultException.cs" />
-    <Compile Include="XmlRpcServiceInfo.cs" />
-    <Compile Include="XmlRpcBeginAttribute.cs" />
-    <Compile Include="XmlRpcException.cs" />
-    <Compile Include="XmlRpcSerializer.cs" />
-    <Compile Include="XmlRpcEndAttribute.cs" />
-    <Compile Include="XmlRpcUrlAttribute.cs" />
-    <Compile Include="util.cs" />
-    <Compile Include="XmlRpcBoolean.cs" />
-    <Compile Include="XmlRpcClientFormatterSink.cs" />
-    <Compile Include="XmlRpcClientFormatterSinkProvider.cs" />
-    <Compile Include="XmlRpcDateTime.cs" />
-    <Compile Include="XmlRpcDouble.cs" />
-    <Compile Include="XmlRpcInt.cs" />
-    <Compile Include="XmlRpcLogger.cs" />
-    <Compile Include="XmlRpcMemberAttribute.cs" />
-    <Compile Include="XmlRpcReturnValueAttribute.cs" />
-    <Compile Include="XmlRpcServerFormatterSink.cs" />
-    <Compile Include="XmlRpcServerFormatterSinkProvider.cs" />
-    <Compile Include="XmlRpcServerProtocol.cs" />
-    <Compile Include="XmlRpcServiceAttribute.cs" />
-    <Compile Include="DateTime8601.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="XmlRpcClientProtocol.resx" />
+    <None Include="XmlRpc\XmlRpcClientProtocol.resx" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -108,4 +108,7 @@
     <PreBuildEvent>
     </PreBuildEvent>
   </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="XmlRpc\" />
+  </ItemGroup>
 </Project>
